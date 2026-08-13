@@ -1,0 +1,81 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
+data = {
+    "CustomerID": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "Age": [19, 21, 20, 23, 31, 22, 35, 23, 64, 30],
+    "AnnualIncome": [15, 15, 16, 16, 17, 17, 18, 18, 19, 19],
+    "SpendingScore": [39, 81, 6, 77, 40, 76, 6, 94, 3, 72]
+}
+
+df = pd.DataFrame(data)
+
+print("Customer Dataset:")
+print(df)
+
+X = df[["Age", "AnnualIncome", "SpendingScore"]]
+
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+inertia = []
+
+for k in range(1, 7):
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    kmeans.fit(X_scaled)
+    inertia.append(kmeans.inertia_)
+
+plt.figure(figsize=(7, 5))
+plt.plot(range(1, 7), inertia, marker="o")
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("Inertia")
+plt.title("Elbow Method")
+plt.show()
+
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+
+df["Cluster"] = kmeans.fit_predict(X_scaled)
+
+print("\nCustomer Cluster Assignments:")
+print(df[["CustomerID", "Age", "AnnualIncome",
+          "SpendingScore", "Cluster"]])
+
+pca = PCA(n_components=2)
+
+X_pca = pca.fit_transform(X_scaled)
+
+print("\nPCA Explained Variance:")
+print(pca.explained_variance_ratio_)
+
+plt.figure(figsize=(8, 6))
+
+plt.scatter(
+    X_pca[:, 0],
+    X_pca[:, 1],
+    c=df["Cluster"],
+    s=100
+)
+
+for i in range(len(df)):
+    plt.annotate(
+        df["CustomerID"][i],
+        (X_pca[i, 0], X_pca[i, 1])
+    )
+
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.title("Customer Segmentation using K-Means + PCA")
+plt.show()
+
+print("\nCluster Centers:")
+print(kmeans.cluster_centers_)
+
+print("\nOptimal Number of Customer Groups: 3")
+
+print("\nK.Keerthana Sai")
+print("192425143")
